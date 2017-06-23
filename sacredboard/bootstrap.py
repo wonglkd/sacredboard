@@ -35,13 +35,15 @@ app = Flask(__name__)
                    "You might need it if you use a custom collection name "
                    "or Sacred v0.6 (which used default.runs). "
                    "Default: runs")
+@click.option("--port", default=None,
+              help="Specify a port for sacredboard to run on")
 @click.option("--no-browser", is_flag=True, default=False,
               help="Do not open web browser automatically.")
 @click.option("--debug", is_flag=True, default=False,
               help="Run the application in Flask debug mode "
                    "(for development).")
 @click.version_option()
-def run(debug, no_browser, m, mu, mc):
+def run(debug, no_browser, m, mu, mc, port):
     """
     Sacredboard.
 
@@ -84,6 +86,10 @@ sacredboard -m sacred -mc default.runs
     app.config["data"].connect()
     if debug:
         app.run(host="0.0.0.0", debug=True)
+    elif port:
+        http_server = WSGIServer(('0.0.0.0', port), app)
+        http_server.start()
+        http_server.serve_forever()
     else:
         for port in range(5000, 5050):
             http_server = WSGIServer(('0.0.0.0', port), app)
