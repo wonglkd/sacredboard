@@ -6,6 +6,7 @@ Configures the database connection and starts the web application.
 """
 import locale
 import sys
+import os
 
 import click
 from flask import Flask
@@ -17,6 +18,20 @@ from sacredboard.app.webapi import routes
 
 locale.setlocale(locale.LC_ALL, '')
 app = Flask(__name__)
+
+
+def apprun():
+    debug = False
+    add_mongo_config_with_uri(app,
+                              os.environ.get('MONGO_URI'),
+                              os.environ.get('MONGO_DB'),
+                              'runs')
+    app.config['DEBUG'] = debug
+    app.debug = debug
+    jinja_filters.setup_filters(app)
+    routes.setup_routes(app)
+    app.config["data"].connect()
+    return app
 
 
 @click.command()
@@ -35,7 +50,7 @@ app = Flask(__name__)
                    "You might need it if you use a custom collection name "
                    "or Sacred v0.6 (which used default.runs). "
                    "Default: runs")
-@click.option("--port", default=None,
+@click.option("--port", default=None, type=int,
               help="Specify a port for sacredboard to run on")
 @click.option("--no-browser", is_flag=True, default=False,
               help="Do not open web browser automatically.")
